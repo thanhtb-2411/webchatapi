@@ -95,3 +95,4 @@ export async function deleteUserRoom(room_id:string, user_id:string){
     }
     return false
 }
+exports.getRoomSnapshotById =getRoomSnapshotById

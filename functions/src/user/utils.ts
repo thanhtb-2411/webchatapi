@@ -1,44 +1,54 @@
-const {admin} = require("../configs");
+const {admin, firestore} = require("../configs");
+const {COLLECTION} = require("../constants");
 
-// eslint-disable-next-line no-unused-vars
-import express = require("express");
-// import { handleError } from '../errors/handle-errors';
-// import * as nodemailer from 'nodemailer';
-
-// eslint-disable-next-line require-jsdoc
-export async function register(req: express.Request, res: express.Response) {
+export async function register(user:any) {
   try {
-    const {displayName, password, email} = req.body;
+    const {displayName, password, email, name, birthday} = user;
 
     if (!displayName || !password || !email) {
-      return res.status(400).send({message: "Missing fields"});
+      return null;
     }
-
     const {uid} = await admin.auth().createUser({
-      displayName,
-      password,
-      email,
-    });
-    await admin.auth().setCustomUserClaims(uid, {role: "user"});
-    const accessToken = await admin.auth().createCustomToken(uid);
-
-    await admin.firestore().collection("users").add({
       email: email,
-      uid: uid,
-      username: displayName,
-      role: "user",
+      password: password,
+      displayName: displayName,
     });
-    return res.status(201).send({uid, accessToken});
+    await firestore.collection(COLLECTION.USER).doc(uid).set({
+      displayName: displayName,
+      email: email,
+      name: name,
+      birthday: new Date(birthday),
+      rooms_id :[],
+      role: "user",
+    })
+    return uid
   } catch (err) {
-    return res.send({message: "Error"});
+    console.log(err);
+    return null;
   }
 }
-export async function getAllUser(req: express.Request, res: express.Response) {
-    try{
-        
-    }
-    catch (err){
-
-    }
+export  async function getAll() {
+  try{
+    const userQuery = await firestore
+        .collection(COLLECTION.USER)
+        .get()
+    const users: any[] = []
+    userQuery.forEach((result:any) => {
+      users.push({
+        id: result.id,
+        data: result.data(),
+      })
+    })
+    return users
+  } catch (error) {
+    return null;
+  }
 }
+export async function getUserSnapshotByUid(uid :string){
+  let userRef=  firestore
+        .collection(COLLECTION.USER)
+        .doc(uid)
+return await userRef.get()
+}
+
 

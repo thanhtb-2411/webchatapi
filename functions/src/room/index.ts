@@ -28,5 +28,5 @@ rooms.post("/deleteUserRoom", async (req,res)=>{
     await deleteUserRoom(room_id,user_id)
     res.send("ok");
 })
-exports.rooms = functions.https.onRequest(rooms);
+exports.room = functions.https.onRequest(rooms);
 
